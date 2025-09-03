@@ -136,6 +136,11 @@
   transition: all 0.3s ease;
   position: relative;
   border: 3px solid transparent;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .item-card:hover {
@@ -177,6 +182,7 @@
   display: block;
   margin-bottom: 15px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1;
 }
 
 .telugu-pronunciation {
@@ -249,7 +255,36 @@
   top: 8px;
 }
 
-/* Responsive Design */
+/* Enhanced Responsive Design */
+@media (max-width: 1024px) {
+  .learning-container {
+    padding: 18px;
+  }
+  
+  .items-grid {
+    max-width: 900px;
+    gap: 12px;
+  }
+  
+  .alphabet-grid,
+  .numbers-grid {
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+  }
+  
+  .telugu-grid {
+    grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+  }
+  
+  .item-card {
+    padding: 18px;
+    min-height: 110px;
+  }
+  
+  .item-display-text {
+    font-size: 2.2rem;
+  }
+}
+
 @media (max-width: 768px) {
   .learning-container {
     padding: 15px;
@@ -288,23 +323,30 @@
     font-size: 1rem;
   }
   
-  .alphabet-grid,
-  .numbers-grid {
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  .items-grid {
+    max-width: 100%;
     gap: 12px;
   }
   
+  .alphabet-grid,
+  .numbers-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 10px;
+  }
+  
   .telugu-grid {
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    gap: 10px;
   }
   
   .item-card {
     padding: 15px;
+    min-height: 100px;
   }
   
   .item-display-text {
     font-size: 2rem;
+    margin-bottom: 12px;
   }
   
   .learning-tips {
@@ -320,6 +362,66 @@
   }
 }
 
+@media (max-width: 600px) {
+  .learning-container {
+    padding: 12px;
+  }
+  
+  .category-selector {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .category-btn {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .display-header {
+    padding: 22px 18px;
+  }
+  
+  .category-title {
+    font-size: 1.6rem;
+  }
+  
+  .category-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .alphabet-grid,
+  .numbers-grid {
+    grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+    gap: 8px;
+  }
+  
+  .telugu-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+  }
+  
+  .item-card {
+    padding: 12px;
+    min-height: 90px;
+  }
+  
+  .item-display-text {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+  
+  .pronunciation-text {
+    font-size: 0.9rem;
+    padding: 4px 8px;
+  }
+  
+  .speak-item-btn {
+    width: 30px;
+    height: 30px;
+  }
+}
+
 @media (max-width: 480px) {
   .learning-container {
     padding: 10px;
@@ -327,17 +429,6 @@
   
   .learning-header h1 {
     font-size: 1.8rem;
-  }
-  
-  .category-selector {
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .category-btn {
-    width: 100%;
-    max-width: 250px;
   }
   
   .display-header {
@@ -349,32 +440,33 @@
   }
   
   .category-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
   .alphabet-grid,
   .numbers-grid {
     grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    gap: 10px;
+    gap: 8px;
   }
   
   .telugu-grid {
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+    gap: 8px;
   }
   
   .item-card {
-    padding: 12px;
+    padding: 10px;
+    min-height: 80px;
   }
   
   .item-display-text {
     font-size: 1.5rem;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
   
   .pronunciation-text {
     font-size: 0.8rem;
-    padding: 3px 8px;
+    padding: 3px 6px;
   }
   
   .speak-item-btn {
@@ -396,6 +488,41 @@
   }
 }
 
+@media (max-width: 400px) {
+  .learning-header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .category-title {
+    font-size: 1.4rem;
+  }
+  
+  .alphabet-grid,
+  .numbers-grid {
+    grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+    gap: 6px;
+  }
+  
+  .telugu-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 6px;
+  }
+  
+  .item-card {
+    padding: 8px;
+    min-height: 75px;
+  }
+  
+  .item-display-text {
+    font-size: 1.3rem;
+  }
+  
+  .category-btn {
+    font-size: 0.8rem;
+    padding: 10px 15px;
+  }
+}
+
 @media (max-width: 360px) {
   .learning-header h1 {
     font-size: 1.5rem;
@@ -407,25 +534,70 @@
   
   .alphabet-grid,
   .numbers-grid {
-    grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    gap: 5px;
   }
   
   .telugu-grid {
-    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+    gap: 5px;
+  }
+  
+  .item-card {
+    padding: 6px;
+    min-height: 70px;
+  }
+  
+  .item-display-text {
+    font-size: 1.2rem;
+  }
+  
+  .speak-item-btn {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .category-btn {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+  }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .learning-container {
+    padding: 10px;
+  }
+  
+  .learning-header {
+    margin-bottom: 20px;
+  }
+  
+  .learning-header h1 {
+    font-size: 1.8rem;
+    margin: 10px 0;
+  }
+  
+  .category-selector {
+    margin-bottom: 20px;
+  }
+  
+  .items-grid {
     gap: 8px;
   }
   
   .item-card {
-    padding: 10px;
+    padding: 12px;
+    min-height: 70px;
   }
   
   .item-display-text {
-    font-size: 1.3rem;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
   }
   
-  .category-btn {
-    font-size: 0.8rem;
-    padding: 10px 15px;
+  .learning-tips {
+    margin-top: 20px;
+    padding: 15px;
   }
 }
