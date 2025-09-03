@@ -1,0 +1,77 @@
+.footer {
+  background: #000000;
+  color: white;
+  padding: 15px 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 0.8rem;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  color:gray;
+  justify-content: center;
+  gap: 8px;
+}
+
+.heart-icon {
+  color: #ff6b6b;
+  animation: heartbeat 1.5s ease-in-out infinite;
+  size: 20px;
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .footer {
+    padding: 15px 0;
+  }
+  
+  .footer-text {
+    font-size: 1rem;
+  }
+  
+  .heart-icon {
+    size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 12px 0;
+  }
+  
+  .footer-text {
+    font-size: 0.9rem;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .heart-icon {
+    size: 16px;
+  }
+}
