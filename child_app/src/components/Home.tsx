@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Calculator, BookOpen, Palette, Brain, TestTube, Trophy, Star, Heart } from 'lucide-react';
+import { Calculator, BookOpen, Palette, TestTube, GraduationCap, Trophy, Star, Heart } from 'lucide-react';
 import './Home.css';
 
 const Home = () => {
@@ -13,8 +13,8 @@ const Home = () => {
       emoji: '🔢'
     },
     {
-      title: 'Reading Fun',
-      description: 'Discover stories, learn new words, and improve reading!',
+      title: 'Reading Journey',
+      description: 'Explore words, spelling, and vocabulary!',
       icon: BookOpen,
       path: '/reading',
       color: '#4ecdc4',
@@ -29,20 +29,20 @@ const Home = () => {
       emoji: '🔬'
     },
     {
-      title: 'Creative Art',
-      description: 'Draw, color, and create amazing artwork!',
+      title: 'Art Studio',
+      description: 'Create beautiful drawings and express your creativity!',
       icon: Palette,
       path: '/art',
       color: '#96ceb4',
       emoji: '🎨'
     },
     {
-      title: 'Memory Challenge',
-      description: 'Train your brain with fun memory games!',
-      icon: Brain,
-      path: '/memory',
+      title: 'Learning Center',
+      description: 'Master alphabets, numbers, and Telugu letters!',
+      icon: GraduationCap,
+      path: '/learning',
       color: '#feca57',
-      emoji: '🧠'
+      emoji: '📚'
     }
   ];
 
@@ -50,62 +50,54 @@ const Home = () => {
     <div className="home">
       <div className="hero-section">
         <h1 className="hero-title">
-          <span className="rainbow">Welcome to Your Learning Adventure!</span>
+          Welcome to Your Learning Adventure! 🚀
         </h1>
         <p className="hero-subtitle">
-          🌟 Learn, Play, and Grow Together! 🌟
+          Discover fun games and activities that make learning exciting!
         </p>
-        <div className="hero-stats">
-          <div className="stat">
-            <Star className="stat-icon" />
-            <span>Fun Learning</span>
+        <div className="hero-features">
+          <div className="feature">
+            <Trophy className="feature-icon" />
+            <span>Earn Points</span>
           </div>
-          <div className="stat">
-            <Heart className="stat-icon" />
-            <span>Safe & Friendly</span>
+          <div className="feature">
+            <Star className="feature-icon" />
+            <span>Learn & Grow</span>
           </div>
-          <div className="stat">
-            <Trophy className="stat-icon" />
-            <span>Earn Rewards</span>
+          <div className="feature">
+            <Heart className="feature-icon" />
+            <span>Have Fun</span>
           </div>
         </div>
       </div>
 
-      <div className="activities-grid">
-        {activities.map((activity, index) => {
-          const Icon = activity.icon;
-          return (
-            <Link key={index} to={activity.path} className="activity-card">
-              <div className="activity-icon" style={{ backgroundColor: activity.color }}>
-                <Icon size={40} color="white" />
+      <div className="activities-section">
+        <h2 className="section-title">Choose Your Adventure!</h2>
+        <div className="activities-grid">
+          {activities.map((activity, index) => (
+            <Link
+              key={index}
+              to={activity.path}
+              className="activity-card"
+              style={{ '--card-color': activity.color } as React.CSSProperties}
+            >
+              <div className="activity-icon">
+                <activity.icon size={48} />
               </div>
               <div className="activity-emoji">{activity.emoji}</div>
               <h3 className="activity-title">{activity.title}</h3>
               <p className="activity-description">{activity.description}</p>
-              <div className="activity-arrow">→</div>
             </Link>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
       <div className="welcome-message">
-        <div className="message-card">
-          <h2>🎉 Ready to Start Learning? 🎉</h2>
-          <p>
-            Choose any activity above to begin your amazing learning journey! 
-            Each game is designed to be fun and educational, helping you learn 
-            new things while having a great time.
-          </p>
-          <div className="tips">
-            <h3>💡 Learning Tips:</h3>
-            <ul>
-              <li>Take your time and don't rush</li>
-              <li>Ask for help if you need it</li>
-              <li>Celebrate your achievements</li>
-              <li>Have fun while learning!</li>
-            </ul>
-          </div>
-        </div>
+        <h2>🌟 Ready to Start Learning? 🌟</h2>
+        <p>
+          Pick any activity above and begin your educational journey! 
+          Each game is designed to be fun and help you learn new things.
+        </p>
       </div>
     </div>
   );

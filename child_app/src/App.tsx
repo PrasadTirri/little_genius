@@ -6,7 +6,7 @@ import MathGame from './components/MathGame';
 import ReadingGame from './components/ReadingGame';
 import ScienceGame from './components/ScienceGame';
 import ArtGame from './components/ArtGame';
-import MemoryGame from './components/MemoryGame';
+import LearningGame from './components/LearningGame';
 import './App.css';
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
             <Route path="/reading" element={<ReadingGame />} />
             <Route path="/science" element={<ScienceGame />} />
             <Route path="/art" element={<ArtGame />} />
-            <Route path="/memory" element={<MemoryGame />} />
+            <Route path="/learning" element={<LearningGame />} />
           </Routes>
         </main>
         <Footer />
