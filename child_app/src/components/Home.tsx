@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Calculator, BookOpen, Palette, TestTube, GraduationCap, Trophy, Star, Heart } from 'lucide-react';
+import { Calculator, BookOpen, Palette, TestTube, GraduationCap } from 'lucide-react';
 import './Home.css';
 
 const Home = () => {
@@ -19,6 +19,14 @@ const Home = () => {
       path: '/reading',
       color: '#4ecdc4',
       emoji: '📚'
+    },
+    {
+      title: 'Words',
+      description: 'Learn English and Telugu alphabets by exploring complete words!',
+      icon: GraduationCap,
+      path: '/missing-letters',
+      color: '#9b59b6',
+      emoji: '🔤'
     },
     {
       title: 'Science Explorer',
@@ -52,7 +60,7 @@ const Home = () => {
         <h1 className="hero-title">
           Welcome to Your Learning Adventure! 🚀
         </h1>
-        <p className="hero-subtitle">
+        {/* <p className="hero-subtitle">
           Discover fun games and activities that make learning exciting!
         </p>
         <div className="hero-features">
@@ -68,7 +76,7 @@ const Home = () => {
             <Heart className="feature-icon" />
             <span>Have Fun</span>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="activities-section">

@@ -1,99 +1,279 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Download, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, Trash2, Undo2, Redo2 } from 'lucide-react';
 import './ArtGame.css';
 
 const ArtGame = () => {
   const [currentTool, setCurrentTool] = useState<'brush' | 'eraser' | 'fill'>('brush');
   const [brushSize, setBrushSize] = useState(5);
-  const [currentColor, setCurrentColor] = useState('#ff6b6b');
+  const [currentColor, setCurrentColor] = useState('#96ceb4'); // Default green color
   const [isDrawing, setIsDrawing] = useState(false);
-  const [gameMode, setGameMode] = useState<'free-draw' | 'coloring' | 'trace'>('free-draw');
   const [gameStarted, setGameStarted] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
+  const historyRef = useRef<ImageData[]>([]);
+  const historyIndexRef = useRef(-1);
 
   const colors = [
-    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
+    '#96ceb4', '#ff6b6b', '#4ecdc4', '#45b7d1', '#feca57',
     '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43',
     '#10ac84', '#ee5a24', '#0abde3', '#ff3838', '#f368e0'
   ];
 
   const brushSizes = [3, 5, 8, 12, 16, 20];
 
-  useEffect(() => {
+  // Initialize canvas
+  const initCanvas = useCallback(() => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      const rect = canvas.getBoundingClientRect();
+      
+      // Set canvas size to match display size
+      canvas.width = rect.width;
+      canvas.height = rect.height;
       
       const context = canvas.getContext('2d');
       if (context) {
+        // Set initial context properties with green color
         context.lineCap = 'round';
         context.lineJoin = 'round';
-        context.strokeStyle = currentColor;
+        context.strokeStyle = '#96ceb4'; // Explicitly set green color
         context.lineWidth = brushSize;
         contextRef.current = context;
+        
+        // Clear canvas and save initial state
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Ensure the context is properly set up
+        context.strokeStyle = '#96ceb4';
+        context.lineWidth = brushSize;
+        
+        saveToHistory();
       }
     }
-  }, [currentColor, brushSize]);
+  }, [brushSize]); // Remove currentColor dependency to avoid re-initialization
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!contextRef.current) return;
+  // Save current canvas state to history
+  const saveToHistory = useCallback(() => {
+    if (contextRef.current && canvasRef.current) {
+      const imageData = contextRef.current.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
+      
+      // Remove any future history if we're not at the end
+      if (historyIndexRef.current < historyRef.current.length - 1) {
+        historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
+      }
+      
+      historyRef.current.push(imageData);
+      historyIndexRef.current = historyRef.current.length - 1;
+      
+      // Limit history to 20 states
+      if (historyRef.current.length > 20) {
+        historyRef.current.shift();
+        historyIndexRef.current--;
+      }
+      
+      setCanUndo(historyIndexRef.current > 0);
+      setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+    }
+  }, []);
+
+  // Initialize canvas when component mounts
+  useEffect(() => {
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      initCanvas();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [initCanvas]);
+
+  // Update context when tool, color, or size changes
+  useEffect(() => {
+    if (contextRef.current) {
+      if (currentTool === 'eraser') {
+        contextRef.current.strokeStyle = '#ffffff';
+        contextRef.current.lineWidth = brushSize;
+      } else {
+        contextRef.current.strokeStyle = currentColor;
+        contextRef.current.lineWidth = brushSize;
+      }
+    }
+  }, [currentTool, currentColor, brushSize]);
+
+  // Handle canvas resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (canvasRef.current && contextRef.current) {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        
+        // Save current drawing
+        const imageData = contextRef.current.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Resize canvas
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        
+        // Restore drawing
+        contextRef.current.putImageData(imageData, 0, 0);
+        
+        // Update context properties
+        contextRef.current.lineCap = 'round';
+        contextRef.current.lineJoin = 'round';
+        if (currentTool === 'eraser') {
+          contextRef.current.strokeStyle = '#ffffff';
+        } else {
+          contextRef.current.strokeStyle = currentColor;
+        }
+        contextRef.current.lineWidth = brushSize;
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [currentTool, currentColor, brushSize]);
+
+  const startDrawing = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!contextRef.current) {
+      console.log('Context not ready, reinitializing...');
+      initCanvas();
+      return;
+    }
     
     setIsDrawing(true);
-    const { offsetX, offsetY } = e.nativeEvent;
+    const rect = canvasRef.current!.getBoundingClientRect();
+    let x: number, y: number;
+    
+    if ('touches' in e) {
+      // Touch event
+      const touch = e.touches[0];
+      x = touch.clientX - rect.left;
+      y = touch.clientY - rect.top;
+    } else {
+      // Mouse event
+      x = e.clientX - rect.left;
+      y = e.clientY - rect.top;
+    }
+    
+    // Ensure context is properly set
+    contextRef.current.lineCap = 'round';
+    contextRef.current.lineJoin = 'round';
+    if (currentTool === 'eraser') {
+      contextRef.current.strokeStyle = '#ffffff';
+    } else {
+      contextRef.current.strokeStyle = currentColor;
+    }
+    contextRef.current.lineWidth = brushSize;
+    
     contextRef.current.beginPath();
-    contextRef.current.moveTo(offsetX, offsetY);
-  };
+    contextRef.current.moveTo(x, y);
+    
+    console.log('Started drawing at:', x, y, 'with color:', contextRef.current.strokeStyle);
+  }, [currentTool, currentColor, brushSize, initCanvas]);
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !contextRef.current) return;
     
-    const { offsetX, offsetY } = e.nativeEvent;
-    contextRef.current.lineTo(offsetX, offsetY);
+    const rect = canvasRef.current!.getBoundingClientRect();
+    let x: number, y: number;
+    
+    if ('touches' in e) {
+      // Touch event
+      const touch = e.touches[0];
+      x = touch.clientX - rect.left;
+      y = touch.clientY - rect.top;
+    } else {
+      // Mouse event
+      x = e.clientX - rect.left;
+      y = e.clientY - rect.top;
+    }
+    
+    // Ensure context is properly set before drawing
+    if (currentTool === 'eraser') {
+      contextRef.current.strokeStyle = '#ffffff';
+    } else {
+      contextRef.current.strokeStyle = currentColor;
+    }
+    contextRef.current.lineWidth = brushSize;
+    
+    contextRef.current.lineTo(x, y);
     contextRef.current.stroke();
-  };
+    
+    console.log('Drawing to:', x, y, 'with color:', contextRef.current.strokeStyle);
+  }, [isDrawing, currentTool, currentColor, brushSize]);
 
-  const stopDrawing = () => {
+  const stopDrawing = useCallback(() => {
     if (!contextRef.current) return;
     
     setIsDrawing(false);
     contextRef.current.closePath();
-  };
+    
+    // Save to history after drawing stops
+    setTimeout(() => saveToHistory(), 100);
+  }, [saveToHistory]);
 
-  const clearCanvas = () => {
+  const clearCanvas = useCallback(() => {
     if (!contextRef.current || !canvasRef.current) return;
     
     contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-  };
+    saveToHistory();
+  }, [saveToHistory]);
 
-  const downloadArt = () => {
+  const undo = useCallback(() => {
+    if (historyIndexRef.current > 0 && contextRef.current && canvasRef.current) {
+      historyIndexRef.current--;
+      const imageData = historyRef.current[historyIndexRef.current];
+      contextRef.current.putImageData(imageData, 0, 0);
+      
+      setCanUndo(historyIndexRef.current > 0);
+      setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+    }
+  }, []);
+
+  const redo = useCallback(() => {
+    if (historyIndexRef.current < historyRef.current.length - 1 && contextRef.current && canvasRef.current) {
+      historyIndexRef.current++;
+      const imageData = historyRef.current[historyIndexRef.current];
+      contextRef.current.putImageData(imageData, 0, 0);
+      
+      setCanUndo(historyIndexRef.current > 0);
+      setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+    }
+  }, []);
+
+  const downloadArt = useCallback(() => {
     if (!canvasRef.current) return;
     
     const link = document.createElement('a');
     link.download = 'my-artwork.png';
     link.href = canvasRef.current.toDataURL();
     link.click();
-  };
+  }, []);
 
-  const startGame = () => {
+  const startGame = useCallback(() => {
     setGameStarted(true);
-    clearCanvas();
-  };
-
-  const getGameInstructions = () => {
-    switch (gameMode) {
-      case 'free-draw':
-        return 'Draw whatever you want! Use your imagination to create amazing artwork.';
-      case 'coloring':
-        return 'Color in the shapes and patterns! Try different colors and make it beautiful.';
-      case 'trace':
-        return 'Follow the dotted lines to complete the picture! Practice your drawing skills.';
-      default:
-        return '';
-    }
-  };
+    // Reset history
+    historyRef.current = [];
+    historyIndexRef.current = -1;
+    setCanUndo(false);
+    setCanRedo(false);
+    
+    // Ensure green color is selected and applied
+    setCurrentColor('#96ceb4');
+    
+    // Initialize canvas with green color
+    setTimeout(() => {
+      if (contextRef.current) {
+        contextRef.current.strokeStyle = '#96ceb4';
+        contextRef.current.lineWidth = brushSize;
+      }
+    }, 100);
+    
+    initCanvas();
+  }, [initCanvas, brushSize]);
 
   if (!gameStarted) {
     return (
@@ -106,36 +286,22 @@ const ArtGame = () => {
           <h1>🎨 Creative Art Studio 🎨</h1>
         </div>
         
-        <div className="game-mode-selector">
-          <h2>Choose Your Creative Adventure:</h2>
-          <div className="mode-buttons">
-            <button
-              className={`mode-btn ${gameMode === 'free-draw' ? 'active' : ''}`}
-              onClick={() => setGameMode('free-draw')}
-            >
-              ✏️ Free Draw
-            </button>
-            <button
-              className={`mode-btn ${gameMode === 'coloring' ? 'active' : ''}`}
-              onClick={() => setGameMode('coloring')}
-            >
-              🎨 Coloring
-            </button>
-            <button
-              className={`mode-btn ${gameMode === 'trace' ? 'active' : ''}`}
-              onClick={() => setGameMode('trace')}
-            >
-              📝 Tracing
-            </button>
-          </div>
-        </div>
-
         <div className="game-instructions">
-          <h3>🎯 How to Create:</h3>
-          <p>{getGameInstructions()}</p>
+          <h3>🎯 Welcome to Your Art Studio!</h3>
+          <p>Create amazing artwork with our professional drawing tools!</p>
+          <div className="default-color-info">
+            <span>🎨 Default Color: </span>
+            <div 
+              className="default-color-preview" 
+              style={{ backgroundColor: '#96ceb4' }}
+              title="Green - Default Color"
+            ></div>
+            <span>Green</span>
+          </div>
           <ul>
             <li>Use different colors and brush sizes</li>
             <li>Try the eraser to fix mistakes</li>
+            <li>Use Undo/Redo to fix errors</li>
             <li>Save your artwork when you're done</li>
             <li>Be creative and have fun!</li>
           </ul>
@@ -181,6 +347,11 @@ const ArtGame = () => {
               🎨 Fill
             </button>
           </div>
+          <div className="current-tool-info">
+            <span>Current: {currentTool === 'brush' ? 'Brush' : currentTool === 'eraser' ? 'Eraser' : 'Fill'}</span>
+            {currentTool === 'brush' && <span>Color: {currentColor}</span>}
+            <span>Size: {brushSize}px</span>
+          </div>
         </div>
 
         <div className="tool-section">
@@ -216,6 +387,14 @@ const ArtGame = () => {
         <div className="tool-section">
           <h3>⚡ Actions</h3>
           <div className="action-buttons">
+            <button className="action-btn" onClick={undo} disabled={!canUndo}>
+              <Undo2 size={20} />
+              Undo
+            </button>
+            <button className="action-btn" onClick={redo} disabled={!canRedo}>
+              <Redo2 size={20} />
+              Redo
+            </button>
             <button className="action-btn" onClick={clearCanvas}>
               <Trash2 size={20} />
               Clear
@@ -223,6 +402,21 @@ const ArtGame = () => {
             <button className="action-btn" onClick={downloadArt}>
               <Download size={20} />
               Save
+            </button>
+            <button 
+              className="action-btn debug-btn" 
+              onClick={() => {
+                if (contextRef.current) {
+                  console.log('Canvas context:', contextRef.current);
+                  console.log('Current color:', contextRef.current.strokeStyle);
+                  console.log('Current size:', contextRef.current.lineWidth);
+                  console.log('Canvas size:', canvasRef.current?.width, 'x', canvasRef.current?.height);
+                } else {
+                  console.log('No context available');
+                }
+              }}
+            >
+              🔍 Debug
             </button>
           </div>
         </div>
@@ -236,6 +430,9 @@ const ArtGame = () => {
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
         />
       </div>
 
@@ -244,8 +441,9 @@ const ArtGame = () => {
         <ul>
           <li>Start with light strokes and build up your drawing</li>
           <li>Use different colors to add depth and interest</li>
-          <li>Don't worry about mistakes - art is about expression!</li>
+          <li>Don't worry about mistakes - use Undo/Redo!</li>
           <li>Try mixing colors to create new ones</li>
+          <li>Use the eraser to clean up edges</li>
         </ul>
       </div>
     </div>
